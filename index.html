@@ -310,11 +310,38 @@ body {
   justify-content: center; align-items: flex-start;
   padding: 24px 16px 120px;
 }
+.pages-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 24px; width: 100%;
+}
 .page {
-  background: var(--cream); width: 100%; max-width: 680;
-  min-height: 800px; padding: 48px 60px 200px;
+  background: var(--cream); width: 680px; max-width: 100%;
+  min-height: 880px; padding: 64px 80px;
   box-shadow: 0 2px 20px rgba(0,0,0,0.4); border-radius: 2px;
-  height: fit-content;
+  position: relative;
+}
+.page-number {
+  position: absolute; top: 24px; right: 30px;
+  font-size: 11px; color: var(--faded); letter-spacing: 0.05em;
+  user-select: none;
+}
+.cast-page .cast-page-title {
+  text-align: center; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.12em; font-size: 14px; color: var(--ink);
+  margin-bottom: 28px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--rule);
+}
+.cast-row-render {
+  display: flex; margin-bottom: 14px;
+  font-size: 14px; line-height: 1.55; color: var(--ink);
+}
+.cast-row-render .cast-name {
+  width: 160px; flex-shrink: 0;
+  text-transform: uppercase; font-weight: 700; letter-spacing: 0.06em;
+}
+.cast-row-render .cast-desc { flex: 1; font-style: italic; color: #3a3832; }
+.cast-page-empty {
+  color: var(--faded); font-style: italic; font-size: 13px; text-align: center;
 }
 
 .line-row {
@@ -410,6 +437,96 @@ body {
 }
 .export-btn:hover { background: #6d5a40; }
 
+/* Runtime estimate */
+.runtime-estimate {
+  color: var(--faded); font-size: 11px; letter-spacing: 0.05em;
+  cursor: pointer; padding: 2px 6px; border-radius: 3px;
+  border: 1px solid transparent;
+}
+.runtime-estimate:hover { border-color: #4a4845; color: #b0a998; }
+.rate-popover {
+  position: absolute; top: 44px; right: 16px;
+  background: var(--chrome); border: 1px solid var(--border);
+  border-radius: 4px; padding: 14px; display: none;
+  z-index: 50; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  min-width: 200px;
+}
+.rate-popover.open { display: block; }
+.rate-popover label {
+  display: block; color: var(--faded); font-size: 10px;
+  letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px;
+}
+.rate-popover input {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--cream); font-family: inherit; font-size: 13px;
+  padding: 6px 8px; border-radius: 3px; width: 100%; outline: none;
+}
+.rate-popover input:focus { border-color: var(--accent); }
+.rate-popover .rate-hint {
+  color: var(--faded); font-size: 10px; margin-top: 8px;
+  letter-spacing: 0.03em;
+}
+
+/* Cast modal */
+.cast-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  display: none; align-items: center; justify-content: center;
+  z-index: 100; padding: 16px;
+}
+.cast-overlay.open { display: flex; }
+.cast-modal {
+  background: #1e1d1b; border: 1px solid var(--border);
+  border-radius: 4px; width: 100%; max-width: 640px;
+  max-height: 80vh; display: flex; flex-direction: column; overflow: hidden;
+}
+.cast-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  color: var(--cream); font-size: 13px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.cast-list { flex: 1; overflow: auto; padding: 16px 20px; }
+.cast-row {
+  display: flex; gap: 8px; margin-bottom: 10px; align-items: flex-start;
+}
+.cast-row input.cast-name-input {
+  flex: 0 0 170px;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--cream); font-family: inherit; font-size: 12px;
+  padding: 6px 8px; border-radius: 3px; outline: none;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.cast-row textarea.cast-desc-input {
+  flex: 1; min-height: 32px;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--cream); font-family: inherit; font-size: 12px;
+  padding: 6px 8px; border-radius: 3px; outline: none;
+  resize: vertical;
+}
+.cast-row input:focus, .cast-row textarea:focus { border-color: var(--accent); }
+.cast-row-delete {
+  background: none; border: 1px solid #4a3030;
+  color: #907070; font-family: inherit; font-size: 10px;
+  padding: 4px 8px; border-radius: 3px; cursor: pointer;
+  align-self: stretch;
+}
+.cast-row-delete:hover { border-color: var(--red); color: var(--red); }
+.cast-actions {
+  display: flex; justify-content: space-between; gap: 8px;
+  padding: 12px 20px; border-top: 1px solid var(--border);
+}
+.cast-empty {
+  color: var(--faded); font-size: 12px; padding: 12px 0; text-align: center;
+}
+.cast-detect-btn {
+  background: none; border: 1px solid #4a4845; color: #b0a998;
+  font-family: inherit; font-size: 11px; cursor: pointer;
+  padding: 4px 10px; border-radius: 3px; letter-spacing: 0.03em;
+}
+.cast-detect-btn:hover { background: var(--border); color: var(--cream); }
+
+.top-bar { position: relative; }
+
 .hidden { display: none !important; }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -470,7 +587,14 @@ body {
     <div class="top-right">
       <span class="save-status" id="ed-save-status" style="cursor:pointer" title="Click to save"><span class="status-dot"></span>saved</span>
       <span class="line-count" id="ed-line-count">0 lines</span>
+      <span class="runtime-estimate" id="ed-runtime" title="Click to set minutes per page">~0 min</span>
+      <button class="sm-btn" id="ed-cast-btn">Cast</button>
       <button class="sm-btn" id="ed-export-btn">Export</button>
+    </div>
+    <div class="rate-popover" id="ed-rate-popover">
+      <label>Minutes per page</label>
+      <input type="number" id="ed-rate-input" min="0.1" step="0.1" value="1">
+      <div class="rate-hint">Industry rule of thumb: ≈1 min/page.</div>
     </div>
   </div>
 
@@ -488,8 +612,13 @@ body {
   </div>
 
   <div class="page-container">
-    <div class="page" id="ed-page">
-      <div class="page-end" id="ed-page-end">+ click or press Enter</div>
+    <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+      <div class="pages-wrap" id="ed-pages-wrap">
+        <div class="page" id="ed-page" data-page="1">
+          <div class="page-number">1.</div>
+        </div>
+      </div>
+      <div class="page-end" id="ed-page-end" style="margin-top:16px;">+ click or press Enter</div>
     </div>
   </div>
 
@@ -498,6 +627,21 @@ body {
     <span>Tab / → → accept name</span>
     <span>⌘1-5 → set type</span>
     <span>⌘S → save</span>
+  </div>
+</div>
+
+<!-- ======== CAST MODAL ======== -->
+<div class="cast-overlay" id="cast-overlay">
+  <div class="cast-modal">
+    <div class="cast-header">
+      <span>Dramatis Personae</span>
+      <button class="sm-btn" id="cast-detect-btn">Detect from script</button>
+    </div>
+    <div class="cast-list" id="cast-list"></div>
+    <div class="cast-actions">
+      <button class="sm-btn" id="cast-add-btn">+ Add character</button>
+      <button class="export-btn" id="cast-done-btn">Done</button>
+    </div>
   </div>
 </div>
 
@@ -945,7 +1089,12 @@ let edDocId = "";
 let edSaveTimer = null;
 let edSaving = false;
 let edDirty = false;
+let edPageCount = 1;
+let edMinsPerPage = 1;
+let edCast = [];
+let edPaginateTimer = null;
 
+const edPagesWrap = document.getElementById("ed-pages-wrap");
 const edPage = document.getElementById("ed-page");
 const edPageEnd = document.getElementById("ed-page-end");
 const edTitleInput = document.getElementById("ed-title-input");
@@ -953,15 +1102,21 @@ const edAuthorInput = document.getElementById("ed-author-input");
 const edTitleBtn = document.getElementById("ed-toggle-title");
 const edTitleEditor = document.getElementById("ed-title-editor");
 const edLineCount = document.getElementById("ed-line-count");
+const edRuntime = document.getElementById("ed-runtime");
+const edRatePopover = document.getElementById("ed-rate-popover");
+const edRateInput = document.getElementById("ed-rate-input");
 const edSaveStatus = document.getElementById("ed-save-status");
 
 async function openDocument(docId) {
   edDocId = docId;
   edLines = [];
   edFocused = 0;
+  edPageCount = 1;
 
-  // clear page
-  edPage.querySelectorAll(".line-row").forEach(el => el.remove());
+  // clear pages
+  edPagesWrap.querySelectorAll(".page").forEach(el => el.remove());
+  // restore a fresh first page
+  const firstPage = ensurePage(1);
 
   showView("editor");
   edTitleEditor.classList.remove("open");
@@ -972,10 +1127,18 @@ async function openDocument(docId) {
     edTitleInput.value = doc.title || "";
     edAuthorInput.value = doc.author || "";
     edTitleBtn.textContent = doc.title || "Untitled";
+    edMinsPerPage = (typeof doc.mins_per_page === "number" && doc.mins_per_page > 0) ? doc.mins_per_page : 1;
+    edRateInput.value = edMinsPerPage;
+    edCast = Array.isArray(doc.cast) ? doc.cast.map(c => ({
+      name: (c.name || "").toString(),
+      description: (c.description || "").toString(),
+    })) : [];
 
     const docLines = doc.lines && doc.lines.length ? doc.lines : [{ type: "scene", text: "" }];
     docLines.forEach(l => edCreateLine(l.type, l.text));
 
+    renderCastPage();
+    repaginate();
     edUpdateCount();
     setSaveStatus("saved", "saved");
     if (edLines[0]) edLines[0].el.focus();
@@ -1010,6 +1173,11 @@ async function edDoSave() {
       title: edTitleInput.value,
       author: edAuthorInput.value,
       lines: edLines.map(l => ({ type: l.type, text: l.el.textContent || "" })),
+      mins_per_page: edMinsPerPage,
+      cast: edCast.filter(c => c.name && c.name.trim()).map(c => ({
+        name: c.name.trim(),
+        description: c.description || "",
+      })),
       updated_at: new Date().toISOString(),
     };
     await mx.saveDocument(edDocId, content);
@@ -1046,13 +1214,15 @@ function edCreateLine(type, text, afterIndex) {
 
   if (afterIndex !== undefined && afterIndex < edLines.length - 1) {
     const nextRow = edLines[afterIndex + 1].row;
-    edPage.insertBefore(row, nextRow);
+    nextRow.parentNode.insertBefore(row, nextRow);
     edLines.splice(afterIndex + 1, 0, lineObj);
   } else if (afterIndex !== undefined) {
-    edPage.insertBefore(row, edPageEnd);
+    const prevRow = edLines[afterIndex].row;
+    prevRow.parentNode.insertBefore(row, prevRow.nextSibling);
     edLines.splice(afterIndex + 1, 0, lineObj);
   } else {
-    edPage.insertBefore(row, edPageEnd);
+    const firstScriptPage = firstScriptPageEl();
+    firstScriptPage.appendChild(row);
     edLines.push(lineObj);
   }
 
@@ -1061,6 +1231,7 @@ function edCreateLine(type, text, afterIndex) {
     edUpdateCount();
     edMarkDirty();
     edUpdateGhost(lineObj);
+    schedulePaginate();
   });
   content.addEventListener("focus", () => {
     edSetFocus(edLines.indexOf(lineObj));
@@ -1086,6 +1257,7 @@ function edRemoveLine(index) {
   placeCursorEnd(edLines[edFocused].el);
   edUpdateCount();
   edMarkDirty();
+  repaginate();
 }
 
 function edSetLineType(index, type) {
@@ -1097,6 +1269,7 @@ function edSetLineType(index, type) {
   edUpdateTypeBar();
   edUpdateGhost(line);
   edMarkDirty();
+  schedulePaginate();
 }
 
 function edSetFocus(index) {
@@ -1124,8 +1297,25 @@ function placeCursorEnd(el) {
 }
 
 function edUpdateCount() {
-  const filled = edLines.filter(l => l.el.textContent.trim()).length;
-  edLineCount.textContent = filled + " line" + (filled !== 1 ? "s" : "");
+  edLineCount.textContent = edPageCount + " page" + (edPageCount !== 1 ? "s" : "");
+  edUpdateRuntime();
+}
+
+function edUpdateRuntime() {
+  const totalMin = edPageCount * edMinsPerPage;
+  let label;
+  if (totalMin < 1) {
+    label = "~" + Math.round(totalMin * 60) + "s";
+  } else if (totalMin >= 60) {
+    const h = Math.floor(totalMin / 60);
+    const m = Math.round(totalMin % 60);
+    label = "~" + h + "h" + (m ? " " + m + "m" : "");
+  } else {
+    const rounded = Math.round(totalMin * 10) / 10;
+    label = "~" + (Number.isInteger(rounded) ? rounded : rounded.toFixed(1)) + " min";
+  }
+  edRuntime.textContent = label;
+  edRuntime.title = `${edPageCount} page${edPageCount !== 1 ? "s" : ""} × ${edMinsPerPage} min/page — click to change`;
 }
 
 function edUpdateTypeBar() {
@@ -1203,6 +1393,7 @@ function edHandleKey(e, lineObj) {
     edSetFocus(newIndex);
     newLine.el.focus();
     edMarkDirty();
+    repaginate();
     return;
   }
 
@@ -1268,6 +1459,272 @@ function edHandleKey(e, lineObj) {
   }
 }
 
+// ============================================================
+// PAGINATION
+// ============================================================
+const PAGE_MAX_CONTENT = 740; // ~ printed page interior height
+
+function firstScriptPageEl() {
+  const pages = edPagesWrap.querySelectorAll(".page:not(.cast-page)");
+  if (pages.length) return pages[0];
+  return ensurePage(1);
+}
+
+function ensurePage(num) {
+  let page = edPagesWrap.querySelector(`.page:not(.cast-page)[data-page="${num}"]`);
+  if (page) return page;
+  page = document.createElement("div");
+  page.className = "page";
+  page.dataset.page = num;
+  const pn = document.createElement("div");
+  pn.className = "page-number";
+  pn.textContent = num + ".";
+  page.appendChild(pn);
+  edPagesWrap.appendChild(page);
+  return page;
+}
+
+function schedulePaginate() {
+  clearTimeout(edPaginateTimer);
+  edPaginateTimer = setTimeout(repaginate, 180);
+}
+
+function saveSelection() {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return null;
+  const r = sel.getRangeAt(0);
+  return {
+    startNode: r.startContainer, startOffset: r.startOffset,
+    endNode: r.endContainer, endOffset: r.endOffset,
+    active: document.activeElement,
+  };
+}
+
+function restoreSelection(saved) {
+  if (!saved) return;
+  if (saved.active && document.contains(saved.active)) {
+    try { saved.active.focus({ preventScroll: true }); } catch {}
+  }
+  if (!saved.startNode || !document.contains(saved.startNode)) return;
+  try {
+    const r = document.createRange();
+    const startMax = saved.startNode.nodeType === 3
+      ? saved.startNode.length : saved.startNode.childNodes.length;
+    const endMax = saved.endNode.nodeType === 3
+      ? saved.endNode.length : saved.endNode.childNodes.length;
+    r.setStart(saved.startNode, Math.min(saved.startOffset, startMax));
+    r.setEnd(saved.endNode, Math.min(saved.endOffset, endMax));
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
+  } catch {}
+}
+
+function repaginate() {
+  clearTimeout(edPaginateTimer);
+  if (!edLines.length) {
+    edPageCount = 1;
+    edUpdateCount();
+    return;
+  }
+  const saved = saveSelection();
+
+  // Make sure first page exists and stash all rows there for uniform measurement
+  const firstPage = ensurePage(1);
+  edLines.forEach(l => firstPage.appendChild(l.row));
+
+  // Measure each row's height now that they're all in the same context
+  const heights = edLines.map(l => l.row.offsetHeight + 2);
+
+  // Distribute into pages
+  let pageNum = 1;
+  let currentPage = firstPage;
+  let cumH = 0;
+
+  for (let i = 0; i < edLines.length; i++) {
+    if (cumH + heights[i] > PAGE_MAX_CONTENT && cumH > 0) {
+      pageNum++;
+      currentPage = ensurePage(pageNum);
+      cumH = 0;
+    }
+    if (edLines[i].row.parentNode !== currentPage) {
+      currentPage.appendChild(edLines[i].row);
+    }
+    cumH += heights[i];
+  }
+
+  // Remove any leftover empty script pages
+  edPagesWrap.querySelectorAll(".page:not(.cast-page)").forEach(p => {
+    const n = parseInt(p.dataset.page || "0", 10);
+    if (n > pageNum) p.remove();
+  });
+
+  edPageCount = pageNum;
+  edUpdateCount();
+  restoreSelection(saved);
+}
+
+// ============================================================
+// DRAMATIS PERSONAE
+// ============================================================
+const castOverlay = document.getElementById("cast-overlay");
+const castList = document.getElementById("cast-list");
+
+function detectCharacterNames() {
+  const names = new Set();
+  edLines.forEach(l => {
+    if (l.type === "character") {
+      const n = (l.el.textContent || "").trim().toUpperCase();
+      if (n) names.add(n);
+    }
+  });
+  return [...names];
+}
+
+function renderCastPage() {
+  // remove existing cast page
+  const existing = edPagesWrap.querySelector(".cast-page");
+  if (existing) existing.remove();
+
+  const valid = edCast.filter(c => c.name && c.name.trim());
+  if (!valid.length) return;
+
+  const page = document.createElement("div");
+  page.className = "page cast-page";
+  const pn = document.createElement("div");
+  pn.className = "page-number";
+  pn.textContent = "i.";
+  page.appendChild(pn);
+
+  const title = document.createElement("div");
+  title.className = "cast-page-title";
+  title.textContent = "Dramatis Personae";
+  page.appendChild(title);
+
+  valid.forEach(c => {
+    const row = document.createElement("div");
+    row.className = "cast-row-render";
+    const name = document.createElement("div");
+    name.className = "cast-name";
+    name.textContent = c.name.toUpperCase();
+    const desc = document.createElement("div");
+    desc.className = "cast-desc";
+    desc.textContent = c.description || "";
+    row.appendChild(name);
+    row.appendChild(desc);
+    page.appendChild(row);
+  });
+
+  edPagesWrap.insertBefore(page, edPagesWrap.firstChild);
+}
+
+function renderCastModal() {
+  castList.innerHTML = "";
+  if (!edCast.length) {
+    const empty = document.createElement("div");
+    empty.className = "cast-empty";
+    empty.textContent = 'No characters yet. Add one, or click "Detect from script".';
+    castList.appendChild(empty);
+    return;
+  }
+  edCast.forEach((c, i) => {
+    const row = document.createElement("div");
+    row.className = "cast-row";
+
+    const nameInput = document.createElement("input");
+    nameInput.className = "cast-name-input";
+    nameInput.type = "text";
+    nameInput.placeholder = "NAME";
+    nameInput.value = c.name || "";
+    nameInput.addEventListener("input", () => { edCast[i].name = nameInput.value; });
+
+    const descInput = document.createElement("textarea");
+    descInput.className = "cast-desc-input";
+    descInput.rows = 2;
+    descInput.placeholder = "Brief description, age, role…";
+    descInput.value = c.description || "";
+    descInput.addEventListener("input", () => { edCast[i].description = descInput.value; });
+
+    const del = document.createElement("button");
+    del.className = "cast-row-delete";
+    del.textContent = "×";
+    del.title = "Remove";
+    del.addEventListener("click", () => {
+      edCast.splice(i, 1);
+      renderCastModal();
+    });
+
+    row.appendChild(nameInput);
+    row.appendChild(descInput);
+    row.appendChild(del);
+    castList.appendChild(row);
+  });
+}
+
+function openCastModal() {
+  renderCastModal();
+  castOverlay.classList.add("open");
+}
+
+function closeCastModal() {
+  // strip empty entries
+  edCast = edCast.filter(c => (c.name || "").trim() || (c.description || "").trim());
+  castOverlay.classList.remove("open");
+  renderCastPage();
+  edMarkDirty();
+  repaginate();
+}
+
+document.getElementById("ed-cast-btn").addEventListener("click", openCastModal);
+document.getElementById("cast-done-btn").addEventListener("click", closeCastModal);
+document.getElementById("cast-add-btn").addEventListener("click", () => {
+  edCast.push({ name: "", description: "" });
+  renderCastModal();
+  const inputs = castList.querySelectorAll(".cast-name-input");
+  const last = inputs[inputs.length - 1];
+  if (last) last.focus();
+});
+document.getElementById("cast-detect-btn").addEventListener("click", () => {
+  const existing = new Set(edCast.map(c => (c.name || "").trim().toUpperCase()));
+  detectCharacterNames().forEach(name => {
+    if (!existing.has(name)) edCast.push({ name, description: "" });
+  });
+  renderCastModal();
+});
+castOverlay.addEventListener("click", e => {
+  if (e.target.id === "cast-overlay") closeCastModal();
+});
+
+// ============================================================
+// RUNTIME ESTIMATE POPOVER
+// ============================================================
+edRuntime.addEventListener("click", e => {
+  e.stopPropagation();
+  edRatePopover.classList.toggle("open");
+  if (edRatePopover.classList.contains("open")) {
+    edRateInput.value = edMinsPerPage;
+    setTimeout(() => edRateInput.focus(), 0);
+  }
+});
+edRateInput.addEventListener("input", () => {
+  const v = parseFloat(edRateInput.value);
+  if (!isNaN(v) && v > 0) {
+    edMinsPerPage = v;
+    edUpdateRuntime();
+    edMarkDirty();
+  }
+});
+edRateInput.addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === "Escape") {
+    edRatePopover.classList.remove("open");
+  }
+});
+document.addEventListener("click", e => {
+  if (!edRatePopover.contains(e.target) && e.target !== edRuntime) {
+    edRatePopover.classList.remove("open");
+  }
+});
+
 // Export
 function generateExport() {
   let out = "";
@@ -1276,6 +1733,18 @@ function generateExport() {
   if (title) {
     out += "\n\n\n                    " + title.toUpperCase() + "\n";
     if (author) out += "                    by " + author + "\n";
+    out += "\n\n\n";
+  }
+  const totalMin = edPageCount * edMinsPerPage;
+  out += "                    " + edPageCount + " page" + (edPageCount !== 1 ? "s" : "") +
+         " · ~" + (Math.round(totalMin * 10) / 10) + " min\n\n\n";
+  const validCast = edCast.filter(c => c.name && c.name.trim());
+  if (validCast.length) {
+    out += "                    DRAMATIS PERSONAE\n\n";
+    validCast.forEach(c => {
+      const name = c.name.toUpperCase().padEnd(20, " ");
+      out += name + (c.description || "") + "\n";
+    });
     out += "\n\n\n";
   }
   edLines.forEach(line => {
@@ -1317,6 +1786,7 @@ edPageEnd.addEventListener("click", () => {
   edSetFocus(edLines.indexOf(newLine));
   newLine.el.focus();
   edMarkDirty();
+  repaginate();
 });
 
 document.querySelectorAll("#ed-type-bar .type-btn").forEach(btn => {
