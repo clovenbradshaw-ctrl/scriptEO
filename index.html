@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playwright</title>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream: #f5f0e8;
+  --ink: #1a1a18;
+  --faded: #8a8578;
+  --rule: #d4cfc4;
+  --highlight: #e8e2d6;
+  --accent: #5c4a32;
+  --chrome: #232120;
+  --surface: #2a2825;
+  --border: #3a3835;
+  --green: #6a8a60;
+  --red: #a06050;
+}
+
+body {
+  font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+  background: var(--surface);
+  color: var(--ink);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---- LOGIN VIEW ---- */
+.login-view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 20px;
+}
+.login-box {
+  background: var(--chrome);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 380px;
+}
+.login-title {
+  color: var(--cream);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.login-sub {
+  color: var(--faded);
+  font-size: 11px;
+  margin-bottom: 28px;
+  letter-spacing: 0.03em;
+}
+.login-field {
+  margin-bottom: 14px;
+}
+.login-label {
+  display: block;
+  color: var(--faded);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.login-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--cream);
+  font-family: inherit;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 3px;
+  outline: none;
+}
+.login-input:focus { border-color: var(--accent); }
+.login-input::placeholder { color: #4a4845; }
+.login-btn {
+  width: 100%;
+  background: var(--accent);
+  border: none;
+  color: var(--cream);
+  font-family: inherit;
+  font-size: 13px;
+  padding: 10px 16px;
+  border-radius: 3px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  margin-top: 8px;
+}
+.login-btn:hover { background: #6d5a40; }
+.login-btn:disabled { opacity: 0.5; cursor: default; }
+.login-error {
+  color: var(--red);
+  font-size: 11px;
+  margin-top: 10px;
+  min-height: 16px;
+}
+.login-server {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* ---- DOCS VIEW ---- */
+.docs-view {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.docs-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: var(--chrome);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.docs-bar-left {
+  display: flex; align-items: center; gap: 12px;
+}
+.docs-bar-title {
+  color: var(--cream);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.docs-user {
+  color: var(--faded);
+  font-size: 11px;
+}
+.docs-list {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+.docs-inner {
+  width: 100%;
+  max-width: 560px;
+}
+.doc-card {
+  background: var(--chrome);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px 20px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.doc-card:hover { border-color: var(--accent); }
+.doc-card-title {
+  color: var(--cream);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+.doc-card-meta {
+  color: var(--faded);
+  font-size: 10px;
+  margin-top: 4px;
+  letter-spacing: 0.03em;
+}
+.doc-card-actions { display: flex; gap: 6px; }
+.doc-delete {
+  background: none; border: 1px solid #4a3030;
+  color: #907070; font-family: inherit; font-size: 10px;
+  padding: 2px 8px; border-radius: 3px; cursor: pointer;
+}
+.doc-delete:hover { border-color: var(--red); color: var(--red); }
+.new-doc-btn {
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--faded);
+  font-family: inherit;
+  font-size: 13px;
+  width: 100%;
+  letter-spacing: 0.04em;
+  transition: border-color 0.15s, color 0.15s;
+}
+.new-doc-btn:hover { border-color: var(--accent); color: var(--cream); }
+.docs-empty {
+  color: var(--faded);
+  font-size: 12px;
+  text-align: center;
+  padding: 40px 0 20px;
+  letter-spacing: 0.04em;
+}
+.docs-loading {
+  color: var(--faded);
+  font-size: 12px;
+  text-align: center;
+  padding: 60px 0;
+}
+
+/* ---- STATUS ---- */
+.status-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.status-dot.saving { background: #b0a040; }
+.status-dot.error { background: var(--red); }
+.save-status {
+  color: var(--faded);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+/* ---- EDITOR VIEW ---- */
+.editor-view {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--chrome);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.top-left { display: flex; align-items: center; gap: 12px; }
+.top-right { display: flex; align-items: center; gap: 10px; }
+
+.title-btn {
+  background: none; border: none; color: var(--cream);
+  font-family: inherit; font-size: 13px; cursor: pointer;
+  padding: 4px 8px; border-radius: 3px;
+  letter-spacing: 0.05em; text-transform: uppercase;
+}
+.title-btn:hover { background: var(--border); }
+.back-btn {
+  background: none; border: none; color: var(--faded);
+  font-family: inherit; font-size: 12px; cursor: pointer;
+  padding: 4px 8px;
+}
+.back-btn:hover { color: var(--cream); }
+
+.line-count {
+  color: var(--faded); font-size: 11px; letter-spacing: 0.05em;
+}
+
+.sm-btn {
+  background: none; border: 1px solid #4a4845; color: #b0a998;
+  font-family: inherit; font-size: 11px; cursor: pointer;
+  padding: 3px 10px; border-radius: 3px; letter-spacing: 0.03em;
+}
+.sm-btn:hover { background: var(--border); }
+
+.title-editor {
+  padding: 12px 16px; background: #1e1d1b;
+  border-bottom: 1px solid var(--border);
+  display: none; gap: 12px; flex-shrink: 0;
+}
+.title-editor.open { display: flex; }
+.title-editor input {
+  background: none; border: 1px solid #4a4845; color: var(--cream);
+  font-family: inherit; font-size: 14px; padding: 6px 10px;
+  border-radius: 3px; flex: 1; outline: none;
+}
+.title-editor input:focus { border-color: var(--accent); }
+#ed-title-input { text-transform: uppercase; letter-spacing: 0.05em; }
+
+.type-bar {
+  display: flex; gap: 2px; padding: 6px 16px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; overflow-x: auto;
+}
+.type-btn {
+  background: none; border: 1px solid transparent; color: #7a7568;
+  font-family: inherit; font-size: 11px; cursor: pointer;
+  padding: 4px 10px; border-radius: 3px;
+  display: flex; align-items: center; gap: 6px;
+  white-space: nowrap; transition: all 0.15s;
+}
+.type-btn:hover { color: #b0a998; }
+.type-btn.active {
+  background: var(--border); color: var(--cream); border-color: #5a5845;
+}
+.type-btn .shortcut { font-size: 9px; opacity: 0.5; }
+
+.page-container {
+  flex: 1; overflow: auto; display: flex;
+  justify-content: center; align-items: flex-start;
+  padding: 24px 16px 120px;
+}
+.page {
+  background: var(--cream); width: 100%; max-width: 680;
+  min-height: 800px; padding: 48px 60px 200px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.4); border-radius: 2px;
+  height: fit-content;
+}
+
+.line-row {
+  display: flex; align-items: flex-start; gap: 0;
+  margin-bottom: 2px; border-radius: 2px; transition: background 0.1s;
+}
+.line-row.focused { background: var(--highlight); }
+
+.line-gutter {
+  width: 36px; flex-shrink: 0; padding-top: 4px;
+  text-align: right; padding-right: 8px; user-select: none;
+}
+.line-type-label {
+  font-size: 8px; color: var(--faded);
+  letter-spacing: 0.08em; font-weight: 700;
+}
+
+.line-content {
+  flex: 1; outline: none; padding: 3px 4px;
+  font-size: 14px; line-height: 1.55; min-height: 24px;
+  color: var(--ink); caret-color: var(--accent);
+  font-family: inherit;
+}
+.line-content:empty:before {
+  content: attr(data-placeholder);
+  color: #b8b0a0; font-style: italic; pointer-events: none;
+}
+
+.line-content.scene {
+  font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; border-bottom: 1px solid var(--rule);
+  margin-bottom: 8px; padding-bottom: 6px; margin-top: 16px;
+}
+.line-content.action { font-style: italic; color: #3a3832; }
+.line-content.character {
+  text-transform: uppercase; text-align: left;
+  letter-spacing: 0.06em; font-weight: 700;
+  margin-top: 12px; padding-left: 20px;
+  position: relative;
+}
+.line-content.character[data-ghost]:not(:empty)::after {
+  content: attr(data-ghost);
+  color: #c0b8a8;
+  font-weight: 400;
+  pointer-events: none;
+}
+.line-content.dialogue { padding-left: 40px; padding-right: 40px; }
+.line-content.paren {
+  padding-left: 60px; font-style: italic;
+  font-size: 13px; color: var(--faded);
+}
+
+.page-end {
+  padding: 20px 0; text-align: center; cursor: pointer;
+  opacity: 0.3; transition: opacity 0.15s;
+  font-size: 11px; color: var(--faded); letter-spacing: 0.05em;
+}
+.page-end:hover { opacity: 0.6; }
+
+.footer {
+  display: flex; justify-content: center; gap: 20px;
+  padding: 8px 16px; background: var(--chrome);
+  border-top: 1px solid var(--border); color: #5a5548;
+  font-size: 10px; letter-spacing: 0.04em;
+  flex-shrink: 0; flex-wrap: wrap;
+}
+
+/* Export */
+.export-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  display: none; align-items: center; justify-content: center;
+  z-index: 100; padding: 16px;
+}
+.export-overlay.open { display: flex; }
+.export-modal {
+  background: #1e1d1b; border: 1px solid var(--border);
+  border-radius: 4px; width: 100%; max-width: 600;
+  max-height: 80vh; display: flex; flex-direction: column; overflow: hidden;
+}
+.export-pre {
+  flex: 1; overflow: auto; padding: 20px; margin: 0;
+  color: var(--cream); font-family: inherit;
+  font-size: 12px; line-height: 1.5; white-space: pre-wrap;
+}
+.export-actions {
+  display: flex; gap: 8px; padding: 12px 20px;
+  border-top: 1px solid var(--border); justify-content: flex-end;
+}
+.export-btn {
+  background: var(--accent); border: none; color: var(--cream);
+  font-family: inherit; font-size: 12px; cursor: pointer;
+  padding: 6px 16px; border-radius: 3px;
+}
+.export-btn:hover { background: #6d5a40; }
+
+.hidden { display: none !important; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #4a4845; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ======== LOGIN VIEW ======== -->
+<div class="login-view" id="view-login">
+  <div class="login-box">
+    <div class="login-title">Playwright</div>
+    <div class="login-sub">Matrix login</div>
+    <div class="login-field">
+      <label class="login-label">Username</label>
+      <input class="login-input" id="login-user" placeholder="@user:hyphae.social" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Password</label>
+      <input class="login-input" id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="login-btn">Login</button>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-server">
+      <label class="login-label">Homeserver</label>
+      <input class="login-input" id="login-server" value="https://hyphae.social">
+    </div>
+  </div>
+</div>
+
+<!-- ======== DOCS VIEW ======== -->
+<div class="docs-view hidden" id="view-docs">
+  <div class="docs-bar">
+    <div class="docs-bar-left">
+      <span class="docs-bar-title">Playwright</span>
+      <span class="docs-user" id="docs-user"></span>
+    </div>
+    <div>
+      <span class="save-status" id="docs-status"></span>
+      <button class="sm-btn" id="logout-btn" style="margin-left:8px">Logout</button>
+    </div>
+  </div>
+  <div class="docs-list">
+    <div class="docs-inner" id="docs-inner">
+      <div class="docs-loading" id="docs-loading">loading scripts...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======== EDITOR VIEW ======== -->
+<div class="editor-view hidden" id="view-editor">
+  <div class="top-bar">
+    <div class="top-left">
+      <button class="back-btn" id="ed-back">← scripts</button>
+      <button class="title-btn" id="ed-toggle-title">Untitled</button>
+    </div>
+    <div class="top-right">
+      <span class="save-status" id="ed-save-status" style="cursor:pointer" title="Click to save"><span class="status-dot"></span>saved</span>
+      <span class="line-count" id="ed-line-count">0 lines</span>
+      <button class="sm-btn" id="ed-export-btn">Export</button>
+    </div>
+  </div>
+
+  <div class="title-editor" id="ed-title-editor">
+    <input type="text" id="ed-title-input" placeholder="Title">
+    <input type="text" id="ed-author-input" placeholder="Author">
+  </div>
+
+  <div class="type-bar" id="ed-type-bar">
+    <button class="type-btn" data-type="scene"><span>Scene</span><span class="shortcut">⌘1</span></button>
+    <button class="type-btn" data-type="action"><span>Action</span><span class="shortcut">⌘2</span></button>
+    <button class="type-btn" data-type="character"><span>Character</span><span class="shortcut">⌘3</span></button>
+    <button class="type-btn" data-type="dialogue"><span>Dialogue</span><span class="shortcut">⌘4</span></button>
+    <button class="type-btn" data-type="paren"><span>Parenthetical</span><span class="shortcut">⌘5</span></button>
+  </div>
+
+  <div class="page-container">
+    <div class="page" id="ed-page">
+      <div class="page-end" id="ed-page-end">+ click or press Enter</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>Enter → new line</span>
+    <span>Tab / → → accept name</span>
+    <span>⌘1-5 → set type</span>
+    <span>⌘S → save</span>
+  </div>
+</div>
+
+<!-- ======== EXPORT MODAL ======== -->
+<div class="export-overlay" id="export-overlay">
+  <div class="export-modal">
+    <pre class="export-pre" id="export-pre"></pre>
+    <div class="export-actions">
+      <button class="export-btn" id="download-btn">Download .txt</button>
+      <button class="export-btn" id="copy-btn">Copy</button>
+      <button class="sm-btn" id="close-export">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// MATRIX CLIENT
+// ============================================================
+const EVENT_TYPE = "com.intelechia.playwright.document";
+const CONFIG_TYPE = "com.intelechia.playwright.config";
+
+const mx = {
+  baseUrl: "",
+  accessToken: "",
+  userId: "",
+  roomId: "",
+
+  async request(method, path, body) {
+    const opts = {
+      method,
+      headers: { "Content-Type": "application/json" },
+    };
+    if (this.accessToken) {
+      opts.headers["Authorization"] = "Bearer " + this.accessToken;
+    }
+    if (body) opts.body = JSON.stringify(body);
+
+    const res = await fetch(this.baseUrl + path, opts);
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || json.errcode || "Request failed");
+    return json;
+  },
+
+  async resolveServer(input) {
+    let base = input.replace(/\/+$/, "");
+    // try well-known
+    try {
+      const res = await fetch(base + "/.well-known/matrix/client");
+      if (res.ok) {
+        const wk = await res.json();
+        if (wk["m.homeserver"] && wk["m.homeserver"].base_url) {
+          base = wk["m.homeserver"].base_url.replace(/\/+$/, "");
+        }
+      }
+    } catch {}
+    this.baseUrl = base;
+    return base;
+  },
+
+  async login(user, password, server) {
+    await this.resolveServer(server);
+
+    // normalize user
+    if (!user.startsWith("@")) {
+      const domain = new URL(this.baseUrl).hostname;
+      user = "@" + user + ":" + domain;
+    }
+
+    const data = await this.request("POST", "/_matrix/client/v3/login", {
+      type: "m.login.password",
+      identifier: { type: "m.id.user", user },
+      password,
+    });
+
+    this.accessToken = data.access_token;
+    this.userId = data.user_id;
+
+    // persist session
+    localStorage.setItem("pw_session", JSON.stringify({
+      baseUrl: this.baseUrl,
+      accessToken: this.accessToken,
+      userId: this.userId,
+    }));
+
+    // persist login details
+    localStorage.setItem("pw_creds", JSON.stringify({
+      user, server, password,
+    }));
+
+    return data;
+  },
+
+  restoreSession() {
+    try {
+      const raw = localStorage.getItem("pw_session");
+      if (!raw) return false;
+      const s = JSON.parse(raw);
+      if (!s.accessToken || !s.userId || !s.baseUrl) return false;
+      this.baseUrl = s.baseUrl;
+      this.accessToken = s.accessToken;
+      this.userId = s.userId;
+      return true;
+    } catch { return false; }
+  },
+
+  logout() {
+    this.accessToken = "";
+    this.userId = "";
+    this.roomId = "";
+    localStorage.removeItem("pw_session");
+  },
+
+  async ensureRoom() {
+    // check account data for existing room
+    try {
+      const config = await this.request("GET",
+        `/_matrix/client/v3/user/${encodeURIComponent(this.userId)}/account_data/${CONFIG_TYPE}`
+      );
+      if (config.room_id) {
+        this.roomId = config.room_id;
+        // verify we're still in it
+        try {
+          await this.request("GET",
+            `/_matrix/client/v3/rooms/${encodeURIComponent(this.roomId)}/state/m.room.name/`
+          );
+          return this.roomId;
+        } catch {
+          // room gone, create new
+        }
+      }
+    } catch {
+      // no config yet
+    }
+
+    // create room
+    const room = await this.request("POST", "/_matrix/client/v3/createRoom", {
+      name: "Playwright Scripts",
+      topic: "Scripts stored by Playwright editor",
+      visibility: "private",
+      preset: "private_chat",
+      creation_content: { "m.federate": false },
+    });
+
+    this.roomId = room.room_id;
+
+    // store in account data
+    await this.request("PUT",
+      `/_matrix/client/v3/user/${encodeURIComponent(this.userId)}/account_data/${CONFIG_TYPE}`,
+      { room_id: this.roomId }
+    );
+
+    return this.roomId;
+  },
+
+  // Max safe size for a state event body (conservative — Synapse default is 65KB)
+  MAX_EVENT_BYTES: 48000,
+
+  async uploadMedia(jsonStr, filename) {
+    const res = await fetch(this.baseUrl + "/_matrix/media/v3/upload?filename=" + encodeURIComponent(filename), {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + this.accessToken,
+        "Content-Type": "application/json",
+      },
+      body: jsonStr,
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || json.errcode || "Upload failed");
+    return json.content_uri; // mxc:// URI
+  },
+
+  async downloadMedia(mxcUri) {
+    // mxc://server/mediaId -> /_matrix/media/v3/download/server/mediaId
+    const parts = mxcUri.replace("mxc://", "").split("/");
+    const server = parts[0];
+    const mediaId = parts.slice(1).join("/");
+
+    // try authenticated endpoint first (newer Synapse), fall back to unauthenticated
+    let res;
+    try {
+      res = await fetch(this.baseUrl + `/_matrix/client/v1/media/download/${server}/${mediaId}`, {
+        headers: { "Authorization": "Bearer " + this.accessToken },
+      });
+    } catch {
+      res = null;
+    }
+    if (!res || !res.ok) {
+      res = await fetch(this.baseUrl + `/_matrix/media/v3/download/${server}/${mediaId}`, {
+        headers: { "Authorization": "Bearer " + this.accessToken },
+      });
+    }
+    if (!res.ok) throw new Error("Media download failed");
+    return await res.json();
+  },
+
+  async listDocuments() {
+    const state = await this.request("GET",
+      `/_matrix/client/v3/rooms/${encodeURIComponent(this.roomId)}/state`
+    );
+    return state
+      .filter(e => e.type === EVENT_TYPE && e.content && !e.content.deleted)
+      .map(e => {
+        const c = e.content;
+        return {
+          id: e.state_key,
+          title: c.title || "Untitled",
+          author: c.author || "",
+          lineCount: c._media_ref ? (c.line_count || 0) : (c.lines || []).filter(l => l.text).length,
+          updatedAt: c.updated_at || "",
+          createdAt: c.created_at || "",
+        };
+      })
+      .sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
+  },
+
+  async getDocument(docId) {
+    const event = await this.request("GET",
+      `/_matrix/client/v3/rooms/${encodeURIComponent(this.roomId)}/state/${EVENT_TYPE}/${encodeURIComponent(docId)}`
+    );
+    // if it's a media pointer, fetch the real content
+    if (event._media_ref) {
+      return await this.downloadMedia(event._media_ref);
+    }
+    return event;
+  },
+
+  async saveDocument(docId, content) {
+    const jsonStr = JSON.stringify(content);
+    const byteSize = new Blob([jsonStr]).size;
+
+    if (byteSize < this.MAX_EVENT_BYTES) {
+      // try direct state event
+      try {
+        await this.request("PUT",
+          `/_matrix/client/v3/rooms/${encodeURIComponent(this.roomId)}/state/${EVENT_TYPE}/${encodeURIComponent(docId)}`,
+          content
+        );
+        return;
+      } catch (err) {
+        // if it failed for size reasons, fall through to media upload
+        const msg = (err.message || "").toLowerCase();
+        if (!msg.includes("too_large") && !msg.includes("too large") && !msg.includes("content length")) {
+          throw err; // some other error, don't swallow
+        }
+      }
+    }
+
+    // too large for state event — upload to media store
+    const mxcUri = await this.uploadMedia(jsonStr, docId + ".json");
+
+    // save a lightweight pointer as the state event
+    const pointer = {
+      _media_ref: mxcUri,
+      title: content.title || "",
+      author: content.author || "",
+      line_count: (content.lines || []).filter(l => l.text).length,
+      updated_at: content.updated_at || new Date().toISOString(),
+    };
+    await this.request("PUT",
+      `/_matrix/client/v3/rooms/${encodeURIComponent(this.roomId)}/state/${EVENT_TYPE}/${encodeURIComponent(docId)}`,
+      pointer
+    );
+  },
+
+  async deleteDocument(docId) {
+    // soft delete by setting deleted flag
+    try {
+      // don't need to fetch full doc for delete — just overwrite the state event
+      await this.request("PUT",
+        `/_matrix/client/v3/rooms/${encodeURIComponent(this.roomId)}/state/${EVENT_TYPE}/${encodeURIComponent(docId)}`,
+        { deleted: true, updated_at: new Date().toISOString() }
+      );
+    } catch (err) {
+      throw err;
+    }
+  },
+};
+
+// ============================================================
+// VIEW MANAGEMENT
+// ============================================================
+function showView(name) {
+  document.getElementById("view-login").classList.toggle("hidden", name !== "login");
+  document.getElementById("view-docs").classList.toggle("hidden", name !== "docs");
+  document.getElementById("view-editor").classList.toggle("hidden", name !== "editor");
+}
+
+// ============================================================
+// LOGIN
+// ============================================================
+const loginBtn = document.getElementById("login-btn");
+const loginError = document.getElementById("login-error");
+
+loginBtn.addEventListener("click", doLogin);
+document.getElementById("login-pass").addEventListener("keydown", e => {
+  if (e.key === "Enter") doLogin();
+});
+
+async function doLogin() {
+  loginError.textContent = "";
+  loginBtn.disabled = true;
+  loginBtn.textContent = "Logging in...";
+  try {
+    const user = document.getElementById("login-user").value.trim();
+    const pass = document.getElementById("login-pass").value;
+    const server = document.getElementById("login-server").value.trim();
+    if (!user || !pass) throw new Error("Username and password required");
+    await mx.login(user, pass, server);
+    await enterDocsView();
+  } catch (err) {
+    loginError.textContent = err.message;
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = "Login";
+  }
+}
+
+// ============================================================
+// DOCS VIEW
+// ============================================================
+document.getElementById("logout-btn").addEventListener("click", () => {
+  mx.logout();
+  localStorage.removeItem("pw_creds");
+  document.getElementById("login-pass").value = "";
+  showView("login");
+});
+
+async function enterDocsView() {
+  showView("docs");
+  document.getElementById("docs-user").textContent = mx.userId;
+  document.getElementById("docs-loading").classList.remove("hidden");
+
+  try {
+    await mx.ensureRoom();
+    await renderDocsList();
+  } catch (err) {
+    document.getElementById("docs-loading").textContent = "Error: " + err.message;
+  }
+}
+
+async function renderDocsList() {
+  const inner = document.getElementById("docs-inner");
+  const loading = document.getElementById("docs-loading");
+
+  try {
+    const docs = await mx.listDocuments();
+    loading.classList.add("hidden");
+
+    // clear old cards
+    inner.querySelectorAll(".doc-card, .new-doc-btn, .docs-empty").forEach(el => el.remove());
+
+    if (docs.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "docs-empty";
+      empty.textContent = "No scripts yet.";
+      inner.appendChild(empty);
+    }
+
+    docs.forEach(doc => {
+      const card = document.createElement("div");
+      card.className = "doc-card";
+
+      const info = document.createElement("div");
+      const title = document.createElement("div");
+      title.className = "doc-card-title";
+      title.textContent = doc.title || "Untitled";
+      const meta = document.createElement("div");
+      meta.className = "doc-card-meta";
+      const date = doc.updatedAt ? new Date(doc.updatedAt).toLocaleDateString() : "";
+      meta.textContent = (doc.author ? "by " + doc.author + " · " : "") + doc.lineCount + " lines" + (date ? " · " + date : "");
+      info.appendChild(title);
+      info.appendChild(meta);
+
+      const actions = document.createElement("div");
+      actions.className = "doc-card-actions";
+      const del = document.createElement("button");
+      del.className = "doc-delete";
+      del.textContent = "delete";
+      del.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        if (confirm("Delete \"" + (doc.title || "Untitled") + "\"?")) {
+          await mx.deleteDocument(doc.id);
+          await renderDocsList();
+        }
+      });
+      actions.appendChild(del);
+
+      card.appendChild(info);
+      card.appendChild(actions);
+      card.addEventListener("click", () => openDocument(doc.id));
+      inner.appendChild(card);
+    });
+
+    const newBtn = document.createElement("button");
+    newBtn.className = "new-doc-btn";
+    newBtn.textContent = "+ new script";
+    newBtn.addEventListener("click", createNewDocument);
+    inner.appendChild(newBtn);
+
+  } catch (err) {
+    loading.textContent = "Error loading: " + err.message;
+    loading.classList.remove("hidden");
+  }
+}
+
+function makeDocId() {
+  return "doc_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 6);
+}
+
+async function createNewDocument() {
+  const docId = makeDocId();
+  const now = new Date().toISOString();
+  const content = {
+    title: "Untitled",
+    author: "",
+    lines: [{ type: "scene", text: "" }],
+    created_at: now,
+    updated_at: now,
+  };
+  await mx.saveDocument(docId, content);
+  openDocument(docId);
+}
+
+// ============================================================
+// EDITOR
+// ============================================================
+const TYPES = ["scene", "action", "character", "dialogue", "paren"];
+const TYPE_LABELS = { scene: "SCE", action: "ACT", character: "CHR", dialogue: "DIA", paren: "(" };
+const NEXT_TYPE = { scene: "action", action: "character", character: "dialogue", dialogue: "character", paren: "dialogue" };
+const TAB_CYCLE = { scene: "action", action: "character", character: "paren", paren: "dialogue", dialogue: "scene" };
+const TAB_REVERSE = {};
+Object.entries(TAB_CYCLE).forEach(([k, v]) => TAB_REVERSE[v] = k);
+const PLACEHOLDERS = {
+  scene: "INT. LOCATION - TIME",
+  action: "Stage direction...",
+  character: "CHARACTER NAME",
+  dialogue: "Dialogue...",
+  paren: "wrylies..."
+};
+
+let edLines = [];
+let edFocused = 0;
+let edDocId = "";
+let edSaveTimer = null;
+let edSaving = false;
+let edDirty = false;
+
+const edPage = document.getElementById("ed-page");
+const edPageEnd = document.getElementById("ed-page-end");
+const edTitleInput = document.getElementById("ed-title-input");
+const edAuthorInput = document.getElementById("ed-author-input");
+const edTitleBtn = document.getElementById("ed-toggle-title");
+const edTitleEditor = document.getElementById("ed-title-editor");
+const edLineCount = document.getElementById("ed-line-count");
+const edSaveStatus = document.getElementById("ed-save-status");
+
+async function openDocument(docId) {
+  edDocId = docId;
+  edLines = [];
+  edFocused = 0;
+
+  // clear page
+  edPage.querySelectorAll(".line-row").forEach(el => el.remove());
+
+  showView("editor");
+  edTitleEditor.classList.remove("open");
+  setSaveStatus("loading", "loading...");
+
+  try {
+    const doc = await mx.getDocument(docId);
+    edTitleInput.value = doc.title || "";
+    edAuthorInput.value = doc.author || "";
+    edTitleBtn.textContent = doc.title || "Untitled";
+
+    const docLines = doc.lines && doc.lines.length ? doc.lines : [{ type: "scene", text: "" }];
+    docLines.forEach(l => edCreateLine(l.type, l.text));
+
+    edUpdateCount();
+    setSaveStatus("saved", "saved");
+    if (edLines[0]) edLines[0].el.focus();
+  } catch (err) {
+    setSaveStatus("error", err.message);
+  }
+}
+
+function setSaveStatus(state, text) {
+  const dotClass = state === "saving" ? "saving" : state === "error" ? "error" : "";
+  edSaveStatus.innerHTML = `<span class="status-dot ${dotClass}"></span>${text}`;
+}
+
+function edMarkDirty() {
+  if (!edDirty) {
+    edDirty = true;
+    setSaveStatus("saving", "unsaved");
+  }
+  // safety-net: auto-save after 5 minutes of unsaved changes
+  clearTimeout(edSaveTimer);
+  edSaveTimer = setTimeout(edDoSave, 5 * 60 * 1000);
+}
+
+async function edDoSave() {
+  if (!edDirty && !edSaving) return;
+  if (edSaving) return;
+  edSaving = true;
+  clearTimeout(edSaveTimer);
+  setSaveStatus("saving", "saving...");
+  try {
+    const content = {
+      title: edTitleInput.value,
+      author: edAuthorInput.value,
+      lines: edLines.map(l => ({ type: l.type, text: l.el.textContent || "" })),
+      updated_at: new Date().toISOString(),
+    };
+    await mx.saveDocument(edDocId, content);
+    edDirty = false;
+    setSaveStatus("saved", "saved");
+  } catch (err) {
+    setSaveStatus("error", "save failed");
+  } finally {
+    edSaving = false;
+  }
+}
+
+function edCreateLine(type, text, afterIndex) {
+  const row = document.createElement("div");
+  row.className = "line-row";
+
+  const gutter = document.createElement("div");
+  gutter.className = "line-gutter";
+  const typeLabel = document.createElement("span");
+  typeLabel.className = "line-type-label";
+  typeLabel.textContent = TYPE_LABELS[type];
+  gutter.appendChild(typeLabel);
+
+  const content = document.createElement("div");
+  content.className = "line-content " + type;
+  content.contentEditable = "true";
+  content.setAttribute("data-placeholder", PLACEHOLDERS[type]);
+  if (text) content.textContent = text;
+
+  row.appendChild(gutter);
+  row.appendChild(content);
+
+  const lineObj = { type, el: content, row, gutterLabel: typeLabel };
+
+  if (afterIndex !== undefined && afterIndex < edLines.length - 1) {
+    const nextRow = edLines[afterIndex + 1].row;
+    edPage.insertBefore(row, nextRow);
+    edLines.splice(afterIndex + 1, 0, lineObj);
+  } else if (afterIndex !== undefined) {
+    edPage.insertBefore(row, edPageEnd);
+    edLines.splice(afterIndex + 1, 0, lineObj);
+  } else {
+    edPage.insertBefore(row, edPageEnd);
+    edLines.push(lineObj);
+  }
+
+  content.addEventListener("keydown", e => edHandleKey(e, lineObj));
+  content.addEventListener("input", () => {
+    edUpdateCount();
+    edMarkDirty();
+    edUpdateGhost(lineObj);
+  });
+  content.addEventListener("focus", () => {
+    edSetFocus(edLines.indexOf(lineObj));
+    edUpdateGhost(lineObj);
+  });
+  content.addEventListener("blur", () => {
+    lineObj.el.removeAttribute("data-ghost");
+  });
+  row.addEventListener("click", () => {
+    edSetFocus(edLines.indexOf(lineObj));
+    content.focus();
+  });
+
+  return lineObj;
+}
+
+function edRemoveLine(index) {
+  if (edLines.length <= 1) return;
+  edLines[index].row.remove();
+  edLines.splice(index, 1);
+  edSetFocus(Math.max(0, index - 1));
+  edLines[edFocused].el.focus();
+  placeCursorEnd(edLines[edFocused].el);
+  edUpdateCount();
+  edMarkDirty();
+}
+
+function edSetLineType(index, type) {
+  const line = edLines[index];
+  line.type = type;
+  line.el.className = "line-content " + type;
+  line.el.setAttribute("data-placeholder", PLACEHOLDERS[type]);
+  line.gutterLabel.textContent = TYPE_LABELS[type];
+  edUpdateTypeBar();
+  edUpdateGhost(line);
+  edMarkDirty();
+}
+
+function edSetFocus(index) {
+  if (edLines[edFocused]) edLines[edFocused].row.classList.remove("focused");
+  edFocused = index;
+  if (edLines[edFocused]) {
+    edLines[edFocused].row.classList.add("focused");
+    edLines[edFocused].row.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    edUpdateTypeBar();
+  }
+}
+
+function placeCursorEnd(el) {
+  const range = document.createRange();
+  const sel = window.getSelection();
+  if (el.childNodes.length > 0) {
+    range.selectNodeContents(el);
+    range.collapse(false);
+  } else {
+    range.setStart(el, 0);
+    range.collapse(true);
+  }
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+function edUpdateCount() {
+  const filled = edLines.filter(l => l.el.textContent.trim()).length;
+  edLineCount.textContent = filled + " line" + (filled !== 1 ? "s" : "");
+}
+
+function edUpdateTypeBar() {
+  const current = edLines[edFocused];
+  document.querySelectorAll("#ed-type-bar .type-btn").forEach(btn => {
+    btn.classList.toggle("active", current && btn.dataset.type === current.type);
+  });
+}
+
+// ---- Character name autocomplete ----
+function edGetCharacterNames() {
+  // collect names with frequency, excluding the current line
+  const counts = {};
+  edLines.forEach((l, i) => {
+    if (l.type === "character" && i !== edFocused) {
+      const name = (l.el.textContent || "").trim().toUpperCase();
+      if (name) counts[name] = (counts[name] || 0) + 1;
+    }
+  });
+  return counts;
+}
+
+function edFindGhost(typed) {
+  if (!typed) return "";
+  const prefix = typed.trim().toUpperCase();
+  if (!prefix) return "";
+  const counts = edGetCharacterNames();
+  let best = "";
+  let bestCount = -1;
+  for (const [name, count] of Object.entries(counts)) {
+    if (name.startsWith(prefix) && name !== prefix && count > bestCount) {
+      best = name;
+      bestCount = count;
+    }
+  }
+  if (!best) return "";
+  // return only the remaining letters (the part the user hasn't typed)
+  return best.slice(prefix.length);
+}
+
+function edUpdateGhost(lineObj) {
+  if (lineObj.type !== "character") {
+    lineObj.el.removeAttribute("data-ghost");
+    return;
+  }
+  const typed = lineObj.el.textContent || "";
+  const ghost = edFindGhost(typed);
+  if (ghost) {
+    lineObj.el.setAttribute("data-ghost", ghost);
+  } else {
+    lineObj.el.removeAttribute("data-ghost");
+  }
+}
+
+function edAcceptGhost(lineObj) {
+  const ghost = lineObj.el.getAttribute("data-ghost");
+  if (!ghost) return false;
+  const current = lineObj.el.textContent || "";
+  lineObj.el.textContent = current + ghost;
+  lineObj.el.removeAttribute("data-ghost");
+  placeCursorEnd(lineObj.el);
+  return true;
+}
+
+function edHandleKey(e, lineObj) {
+  const index = edLines.indexOf(lineObj);
+
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    // accept ghost completion if present
+    if (lineObj.type === "character") edAcceptGhost(lineObj);
+    const nextType = NEXT_TYPE[lineObj.type] || "action";
+    const newLine = edCreateLine(nextType, "", index);
+    const newIndex = edLines.indexOf(newLine);
+    edSetFocus(newIndex);
+    newLine.el.focus();
+    edMarkDirty();
+    return;
+  }
+
+  if (e.key === "Tab") {
+    e.preventDefault();
+    // Tab accepts ghost on character lines if there is one
+    if (lineObj.type === "character" && lineObj.el.getAttribute("data-ghost")) {
+      edAcceptGhost(lineObj);
+      edMarkDirty();
+      return;
+    }
+    const map = e.shiftKey ? TAB_REVERSE : TAB_CYCLE;
+    edSetLineType(index, map[lineObj.type] || "action");
+    return;
+  }
+
+  // Right arrow at end of text accepts ghost
+  if (e.key === "ArrowRight" && lineObj.type === "character" && lineObj.el.getAttribute("data-ghost")) {
+    const sel = window.getSelection();
+    if (sel.anchorOffset >= (lineObj.el.textContent || "").length) {
+      e.preventDefault();
+      edAcceptGhost(lineObj);
+      edMarkDirty();
+      return;
+    }
+  }
+
+  // Escape clears ghost
+  if (e.key === "Escape" && lineObj.type === "character") {
+    lineObj.el.removeAttribute("data-ghost");
+    return;
+  }
+
+  if (e.key === "Backspace" && !lineObj.el.textContent && edLines.length > 1) {
+    e.preventDefault();
+    edRemoveLine(index);
+    return;
+  }
+
+  if (e.key === "ArrowUp" && index > 0) {
+    const sel = window.getSelection();
+    if (sel.anchorOffset === 0) {
+      e.preventDefault();
+      edSetFocus(index - 1);
+      edLines[edFocused].el.focus();
+      placeCursorEnd(edLines[edFocused].el);
+    }
+  }
+
+  if (e.key === "ArrowDown" && index < edLines.length - 1) {
+    const sel = window.getSelection();
+    if (sel.anchorOffset >= (lineObj.el.textContent || "").length) {
+      e.preventDefault();
+      edSetFocus(index + 1);
+      edLines[edFocused].el.focus();
+      placeCursorEnd(edLines[edFocused].el);
+    }
+  }
+
+  if ((e.ctrlKey || e.metaKey) && e.key >= "1" && e.key <= "5") {
+    e.preventDefault();
+    edSetLineType(index, TYPES[parseInt(e.key) - 1]);
+  }
+}
+
+// Export
+function generateExport() {
+  let out = "";
+  const title = edTitleInput.value;
+  const author = edAuthorInput.value;
+  if (title) {
+    out += "\n\n\n                    " + title.toUpperCase() + "\n";
+    if (author) out += "                    by " + author + "\n";
+    out += "\n\n\n";
+  }
+  edLines.forEach(line => {
+    const text = line.el.textContent || "";
+    if (!text && line.type !== "scene") return;
+    switch (line.type) {
+      case "scene": out += "\n" + text.toUpperCase() + "\n\n"; break;
+      case "action": out += text + "\n\n"; break;
+      case "character": out += "          " + text.toUpperCase() + "\n"; break;
+      case "dialogue": out += "     " + text + "\n\n"; break;
+      case "paren": out += "        (" + text + ")\n"; break;
+    }
+  });
+  return out;
+}
+
+// Editor event listeners
+document.getElementById("ed-back").addEventListener("click", async () => {
+  // save before leaving
+  clearTimeout(edSaveTimer);
+  await edDoSave();
+  enterDocsView();
+});
+
+edTitleBtn.addEventListener("click", () => {
+  edTitleEditor.classList.toggle("open");
+});
+
+edTitleInput.addEventListener("input", () => {
+  edTitleBtn.textContent = edTitleInput.value || "Untitled";
+  edMarkDirty();
+});
+edAuthorInput.addEventListener("input", edMarkDirty);
+
+edSaveStatus.addEventListener("click", () => { if (edDirty) edDoSave(); });
+
+edPageEnd.addEventListener("click", () => {
+  const newLine = edCreateLine("action", "", edLines.length - 1);
+  edSetFocus(edLines.indexOf(newLine));
+  newLine.el.focus();
+  edMarkDirty();
+});
+
+document.querySelectorAll("#ed-type-bar .type-btn").forEach(btn => {
+  btn.addEventListener("mousedown", e => {
+    e.preventDefault();
+    if (edLines[edFocused]) {
+      edSetLineType(edFocused, btn.dataset.type);
+      edLines[edFocused].el.focus();
+    }
+  });
+});
+
+document.getElementById("ed-export-btn").addEventListener("click", () => {
+  document.getElementById("export-pre").textContent = generateExport();
+  document.getElementById("export-overlay").classList.add("open");
+});
+document.getElementById("close-export").addEventListener("click", () => {
+  document.getElementById("export-overlay").classList.remove("open");
+});
+document.getElementById("export-overlay").addEventListener("click", e => {
+  if (e.target.id === "export-overlay") e.target.classList.remove("open");
+});
+document.getElementById("download-btn").addEventListener("click", () => {
+  const text = generateExport();
+  const blob = new Blob([text], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = (edTitleInput.value || "script").toLowerCase().replace(/\s+/g, "-") + ".txt";
+  a.click();
+  URL.revokeObjectURL(url);
+  document.getElementById("export-overlay").classList.remove("open");
+});
+document.getElementById("copy-btn").addEventListener("click", () => {
+  navigator.clipboard.writeText(generateExport());
+  document.getElementById("export-overlay").classList.remove("open");
+});
+
+// ============================================================
+// GLOBAL SAVE SHORTCUTS
+// ============================================================
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+    e.preventDefault();
+    if (!document.getElementById("view-editor").classList.contains("hidden")) {
+      edDoSave();
+    }
+  }
+});
+
+window.addEventListener("beforeunload", e => {
+  if (edDirty && edDocId) {
+    e.preventDefault();
+    e.returnValue = "You have unsaved changes.";
+  }
+});
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+  // restore login field values
+  try {
+    const creds = JSON.parse(localStorage.getItem("pw_creds") || "{}");
+    if (creds.user) document.getElementById("login-user").value = creds.user;
+    if (creds.server) document.getElementById("login-server").value = creds.server;
+    if (creds.password) document.getElementById("login-pass").value = creds.password;
+  } catch {}
+
+  if (mx.restoreSession()) {
+    try {
+      // verify session is still valid
+      await mx.request("GET", "/_matrix/client/v3/account/whoami");
+      await enterDocsView();
+      return;
+    } catch {
+      // session expired — try re-login from stored creds
+      try {
+        const creds = JSON.parse(localStorage.getItem("pw_creds") || "{}");
+        if (creds.user && creds.password && creds.server) {
+          await mx.login(creds.user, creds.password, creds.server);
+          await enterDocsView();
+          return;
+        }
+      } catch {}
+      mx.logout();
+      showView("login");
+    }
+  } else {
+    // no session — try auto-login from stored creds
+    try {
+      const creds = JSON.parse(localStorage.getItem("pw_creds") || "{}");
+      if (creds.user && creds.password && creds.server) {
+        await mx.login(creds.user, creds.password, creds.server);
+        await enterDocsView();
+        return;
+      }
+    } catch {}
+    showView("login");
+  }
+}
+
+init();
+</script>
+</body>
+</html>
