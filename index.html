@@ -1236,6 +1236,7 @@ function edCreateLine(type, text, afterIndex) {
   }
 
   content.addEventListener("keydown", e => edHandleKey(e, lineObj));
+  content.addEventListener("paste", e => edHandlePaste(e, lineObj));
   content.addEventListener("input", () => {
     edUpdateCount();
     edMarkDirty();
@@ -1304,6 +1305,68 @@ function placeCursorEnd(el) {
   }
   sel.removeAllRanges();
   sel.addRange(range);
+}
+
+function setCaretAt(el, pos) {
+  const sel = window.getSelection();
+  const range = document.createRange();
+  const node = el.firstChild;
+  if (node && node.nodeType === 3) {
+    range.setStart(node, Math.max(0, Math.min(pos, node.length)));
+    range.collapse(true);
+  } else {
+    range.selectNodeContents(el);
+    range.collapse(false);
+  }
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+// Paste as plain text only, so pasted content always takes on the section
+// type of the line it lands in. Newline-separated blocks become additional
+// lines of that same type.
+function edHandlePaste(e, lineObj) {
+  e.preventDefault();
+  const cd = e.clipboardData || window.clipboardData;
+  const raw = cd ? cd.getData("text/plain") : "";
+  const segments = (raw || "").replace(/\r\n?/g, "\n").split("\n");
+
+  const el = lineObj.el;
+  // Split the current line's text around the caret / current selection.
+  let before = el.textContent || "";
+  let after = "";
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount && el.contains(sel.anchorNode)) {
+    const r = sel.getRangeAt(0);
+    const pre = r.cloneRange(); pre.selectNodeContents(el); pre.setEnd(r.startContainer, r.startOffset);
+    const post = r.cloneRange(); post.selectNodeContents(el); post.setStart(r.endContainer, r.endOffset);
+    before = pre.toString();
+    after = post.toString();
+  }
+
+  if (segments.length <= 1) {
+    const head = before + (segments[0] || "");
+    el.textContent = head + after;
+    setCaretAt(el, head.length);
+    edUpdateGhost(lineObj);
+  } else {
+    el.textContent = before + segments[0];
+    let idx = edLines.indexOf(lineObj);
+    let last = lineObj;
+    for (let s = 1; s < segments.length; s++) {
+      const isLast = s === segments.length - 1;
+      const text = isLast ? segments[s] + after : segments[s];
+      last = edCreateLine(lineObj.type, text, idx);
+      idx = edLines.indexOf(last);
+    }
+    edSetFocus(edLines.indexOf(last));
+    last.el.focus();
+    setCaretAt(last.el, segments[segments.length - 1].length);
+  }
+
+  edUpdateCount();
+  edMarkDirty();
+  repaginate();
 }
 
 function edUpdateCount() {
