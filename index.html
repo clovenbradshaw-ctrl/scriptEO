@@ -394,6 +394,15 @@ body {
   font-size: 13px; color: var(--faded);
 }
 
+/* Dialogue continued across a page break */
+.line-row.split-hidden { display: none; }
+.cont-cue .line-content.character { margin-top: 0; }
+.cont-more .cont-more-text {
+  padding-left: 40px; font-style: italic;
+  color: var(--faded); font-size: 13px; letter-spacing: 0.05em;
+}
+.cont-fragment .line-content { caret-color: transparent; cursor: text; }
+
 .page-end {
   padding: 20px 0; text-align: center; cursor: pointer;
   opacity: 0.3; transition: opacity 0.15s;
@@ -1239,6 +1248,7 @@ function edCreateLine(type, text, afterIndex) {
   });
   content.addEventListener("blur", () => {
     lineObj.el.removeAttribute("data-ghost");
+    schedulePaginate();
   });
   row.addEventListener("click", () => {
     edSetFocus(edLines.indexOf(lineObj));
@@ -1463,6 +1473,8 @@ function edHandleKey(e, lineObj) {
 // PAGINATION
 // ============================================================
 const PAGE_MAX_CONTENT = 740; // ~ printed page interior height
+const DIALOGUE_MIN_SPLIT = 86; // need ~2 lines + (MORE) before splitting a speech
+const MORE_RESERVE = 30;       // room kept for the (MORE) marker at a break
 
 function firstScriptPageEl() {
   const pages = edPagesWrap.querySelectorAll(".page:not(.cast-page)");
@@ -1520,6 +1532,168 @@ function restoreSelection(saved) {
   } catch {}
 }
 
+// ---- Dialogue continuation across page breaks ----
+// These build display-only nodes; the editable row in edLines stays the
+// single source of truth and is never mutated by pagination.
+
+function makeContFrame(extraClass) {
+  const row = document.createElement("div");
+  row.className = "line-row " + extraClass;
+  const gutter = document.createElement("div");
+  gutter.className = "line-gutter";
+  row.appendChild(gutter);
+  return row;
+}
+
+function makeContCue(name, line) {
+  const row = makeContFrame("cont-cue");
+  const content = document.createElement("div");
+  content.className = "line-content character";
+  content.textContent = (name || "").toUpperCase() + " (CONT'D)";
+  row.appendChild(content);
+  attachContEdit(row, line);
+  return row;
+}
+
+function makeMoreCue(line) {
+  const row = makeContFrame("cont-more");
+  const content = document.createElement("div");
+  content.className = "line-content cont-more-text";
+  content.textContent = "(MORE)";
+  row.appendChild(content);
+  attachContEdit(row, line);
+  return row;
+}
+
+function makeDialogueFragment(templateRow, text, showLabel, line) {
+  const frag = templateRow.cloneNode(true);
+  frag.classList.remove("split-hidden", "focused");
+  frag.classList.add("cont-fragment");
+  frag.querySelectorAll("[contenteditable]").forEach(e => e.removeAttribute("contenteditable"));
+  const content = frag.querySelector(".line-content");
+  if (content) {
+    content.removeAttribute("data-ghost");
+    content.removeAttribute("data-placeholder");
+    content.textContent = text;
+  }
+  const label = frag.querySelector(".line-type-label");
+  if (label && !showLabel) label.textContent = "";
+  attachContEdit(frag, line);
+  return frag;
+}
+
+// Clicking any continuation artifact drops focus into the real (hidden) row
+// so the speech can be edited as one whole line again.
+function attachContEdit(node, line) {
+  if (!line) return;
+  node.addEventListener("mousedown", e => {
+    e.preventDefault();
+    focusSplitLine(line);
+  });
+}
+
+function focusSplitLine(line) {
+  line.row.classList.remove("split-hidden");
+  const idx = edLines.indexOf(line);
+  if (idx >= 0) edSetFocus(idx);
+  line.el.focus();
+  placeCursorEnd(line.el);
+  repaginate();
+}
+
+// Largest number of words from `start` whose rendered height fits in `maxH`.
+function measureFit(templateRow, words, start, maxH, pageEl) {
+  if (maxH <= 0 || start >= words.length) return 0;
+  const probe = templateRow.cloneNode(true);
+  probe.classList.remove("split-hidden");
+  probe.style.visibility = "hidden";
+  probe.querySelectorAll("[contenteditable]").forEach(e => e.removeAttribute("contenteditable"));
+  const content = probe.querySelector(".line-content");
+  if (content) {
+    content.removeAttribute("data-ghost");
+    content.removeAttribute("data-placeholder");
+  }
+  pageEl.appendChild(probe);
+  let lo = 1, hi = words.length - start, best = 0;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (content) content.textContent = words.slice(start, start + mid).join(" ");
+    if (probe.offsetHeight <= maxH) { best = mid; lo = mid + 1; }
+    else hi = mid - 1;
+  }
+  probe.remove();
+  return best;
+}
+
+// Add a "NAME (CONT'D)" cue when the current speaker's cue sits on an earlier page.
+function addContCueIfNeeded(line, ctx) {
+  if (ctx.speakerName && ctx.speakerCuePage < ctx.pageNum) {
+    const cue = makeContCue(ctx.speakerName, line);
+    ctx.currentPage.appendChild(cue);
+    ctx.cumH += cue.offsetHeight + 2;
+    ctx.speakerCuePage = ctx.pageNum;
+  }
+}
+
+// Flow one dialogue line across as many pages as it needs, leaving "(MORE)"
+// at each break and a "NAME (CONT'D)" cue at the top of each continuation.
+function splitDialogueAcross(line, idx, ctx) {
+  const realRow = line.row;
+  const words = (line.el.textContent || "").split(/\s+/).filter(Boolean);
+  // Keep the real, editable row in the DOM but hidden — it stays the data source.
+  realRow.classList.add("split-hidden");
+  ctx.currentPage.appendChild(realRow);
+
+  let start = 0;
+  let firstChunk = true;
+  while (start < words.length) {
+    if (!firstChunk) {
+      ctx.pageNum++;
+      ctx.currentPage = ensurePage(ctx.pageNum);
+      ctx.cumH = 0;
+    }
+    addContCueIfNeeded(line, ctx);
+    const remaining = PAGE_MAX_CONTENT - ctx.cumH;
+    // Reserve space for a (MORE) marker in case this isn't the final chunk.
+    let fit = measureFit(realRow, words, start, remaining - MORE_RESERVE, ctx.currentPage);
+    if (fit < 1) fit = measureFit(realRow, words, start, remaining, ctx.currentPage);
+    if (fit < 1) fit = words.length - start; // safety: always make progress
+    const end = Math.min(start + fit, words.length);
+    const isLast = end >= words.length;
+    const frag = makeDialogueFragment(realRow, words.slice(start, end).join(" "), firstChunk, line);
+    ctx.currentPage.appendChild(frag);
+    ctx.cumH += frag.offsetHeight + 2;
+    if (!isLast) {
+      const more = makeMoreCue(line);
+      ctx.currentPage.appendChild(more);
+      ctx.cumH += more.offsetHeight + 2;
+    }
+    start = end;
+    firstChunk = false;
+  }
+}
+
+function breakToNextPage(ctx) {
+  ctx.pageNum++;
+  ctx.currentPage = ensurePage(ctx.pageNum);
+  ctx.cumH = 0;
+}
+
+// Break before a dialogue, carrying its character cue along if the cue is the
+// row right above it (never strand a cue alone at the foot of a page).
+function breakKeepingCue(line, idx, ctx) {
+  const prev = edLines[idx - 1];
+  if (line.type === "dialogue" && prev && prev.type === "character" &&
+      prev.row.parentNode === ctx.currentPage) {
+    breakToNextPage(ctx);
+    ctx.currentPage.appendChild(prev.row);
+    ctx.cumH += prev.row.offsetHeight + 2;
+    ctx.speakerCuePage = ctx.pageNum;
+  } else {
+    breakToNextPage(ctx);
+  }
+}
+
 function repaginate() {
   clearTimeout(edPaginateTimer);
   if (!edLines.length) {
@@ -1529,37 +1703,92 @@ function repaginate() {
   }
   const saved = saveSelection();
 
-  // Make sure first page exists and stash all rows there for uniform measurement
+  // Clear continuation artifacts from the previous pass and reveal hidden rows.
+  edPagesWrap.querySelectorAll(".cont-fragment, .cont-cue, .cont-more").forEach(el => el.remove());
+  edPagesWrap.querySelectorAll(".line-row.split-hidden").forEach(el => el.classList.remove("split-hidden"));
+
+  // Stash all rows on the first page for uniform height measurement.
   const firstPage = ensurePage(1);
   edLines.forEach(l => firstPage.appendChild(l.row));
-
-  // Measure each row's height now that they're all in the same context
   const heights = edLines.map(l => l.row.offsetHeight + 2);
 
-  // Distribute into pages
-  let pageNum = 1;
-  let currentPage = firstPage;
-  let cumH = 0;
+  const focusedEl = document.activeElement;
+  const ctx = { pageNum: 1, currentPage: firstPage, cumH: 0, speakerName: "", speakerCuePage: 1 };
 
   for (let i = 0; i < edLines.length; i++) {
-    if (cumH + heights[i] > PAGE_MAX_CONTENT && cumH > 0) {
-      pageNum++;
-      currentPage = ensurePage(pageNum);
-      cumH = 0;
+    const line = edLines[i];
+    const h = heights[i];
+
+    // Scene headings and action reset the active speaker.
+    if (line.type === "scene" || line.type === "action") {
+      if (ctx.cumH + h > PAGE_MAX_CONTENT && ctx.cumH > 0) breakToNextPage(ctx);
+      ctx.currentPage.appendChild(line.row);
+      ctx.cumH += h;
+      ctx.speakerName = "";
+      ctx.speakerCuePage = ctx.pageNum;
+      continue;
     }
-    if (edLines[i].row.parentNode !== currentPage) {
-      currentPage.appendChild(edLines[i].row);
+
+    if (line.type === "character") {
+      if (ctx.cumH + h > PAGE_MAX_CONTENT && ctx.cumH > 0) breakToNextPage(ctx);
+      ctx.currentPage.appendChild(line.row);
+      ctx.cumH += h;
+      ctx.speakerName = (line.el.textContent || "").trim();
+      ctx.speakerCuePage = ctx.pageNum;
+      continue;
     }
-    cumH += heights[i];
+
+    // Dialogue or parenthetical (speech body).
+    const fitsWhole = ctx.cumH + h <= PAGE_MAX_CONTENT;
+    if (fitsWhole) {
+      addContCueIfNeeded(line, ctx);
+      ctx.currentPage.appendChild(line.row);
+      ctx.cumH += h;
+      continue;
+    }
+
+    const focused = (line.el === focusedEl);
+    const words = (line.el.textContent || "").split(/\s+/).filter(Boolean);
+    const splittable = line.type === "dialogue" && !focused && words.length >= 2;
+
+    if (splittable) {
+      try {
+        // Too little room to leave a clean head here? Move the whole speech
+        // (with its cue) down rather than stranding a one-line sliver.
+        if (ctx.cumH > 0 && (PAGE_MAX_CONTENT - ctx.cumH) < DIALOGUE_MIN_SPLIT) {
+          breakKeepingCue(line, i, ctx);
+        }
+        if (ctx.cumH + h <= PAGE_MAX_CONTENT) {
+          addContCueIfNeeded(line, ctx);
+          ctx.currentPage.appendChild(line.row);
+          ctx.cumH += h;
+        } else {
+          splitDialogueAcross(line, i, ctx);
+        }
+      } catch (err) {
+        // Never let a layout edge case break the editor: place the row whole.
+        line.row.classList.remove("split-hidden");
+        breakToNextPage(ctx);
+        ctx.currentPage.appendChild(line.row);
+        ctx.cumH += h;
+      }
+      continue;
+    }
+
+    // Not splittable (focused, parenthetical, or a single word): move it whole.
+    breakKeepingCue(line, i, ctx);
+    addContCueIfNeeded(line, ctx);
+    ctx.currentPage.appendChild(line.row);
+    ctx.cumH += h;
   }
 
-  // Remove any leftover empty script pages
+  // Remove any leftover empty script pages.
   edPagesWrap.querySelectorAll(".page:not(.cast-page)").forEach(p => {
     const n = parseInt(p.dataset.page || "0", 10);
-    if (n > pageNum) p.remove();
+    if (n > ctx.pageNum) p.remove();
   });
 
-  edPageCount = pageNum;
+  edPageCount = ctx.pageNum;
   edUpdateCount();
   restoreSelection(saved);
 }
